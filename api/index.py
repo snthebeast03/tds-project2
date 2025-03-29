@@ -17,8 +17,5 @@ def answer_question():
 
     return jsonify({"answer": full_input[:200]})  # Preview content
 
-# ⬇️ Vercel handler for Flask
-from vercel_wsgi import handle_request
-
-def handler(environ, start_response):
-    return handle_request(app, environ, start_response)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
