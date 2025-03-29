@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import os
-import io
+from io import BytesIO
 import zipfile
 import fitz  # PyMuPDF
 import pandas as pd
@@ -12,8 +12,14 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_API_KEY = "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"
 
 def extract_text_from_pdf(file_stream):
-    doc = fitz.open(stream=file_stream, filetype="pdf")
-    return "\n".join([page.get_text() for page in doc])
+    # Wrap the stream to make it compatible
+    pdf_data = BytesIO(file_stream.read())
+    doc = fitz.open(stream=pdf_data, filetype="pdf")
+
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    return text
 
 def extract_text_from_excel(file_stream):
     try:
