@@ -14,8 +14,6 @@ def answer_question():
 
     if not question:
         return jsonify({"error": "Missing question parameter"}), 400
-    if not file:
-        return jsonify({"error": "Missing file parameter"}), 400
 
     content = file.read().decode("utf-8", errors="ignore")
     full_input = f"{question}\n\n{content}"
