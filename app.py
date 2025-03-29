@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 LLM_API_URL = "https://aiproxy.sanand.workers.dev/openai/v1/chat/completions"
-AIPROXY_TOKEN = os.getenv("AIPROXY_TOKEN")  # Set on Render as env var
+AIPROXY_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6IjI0ZjEwMDE1OTlAZHMuc3R1ZHkuaWl0bS5hYy5pbiJ9.uTR9VdsvciCVXRPPt17VxRA34LK1Xolxom_2QOVMpiA"  # Set on Render as env var
 
 @app.route('/api/', methods=['POST'])
 def answer_question():
