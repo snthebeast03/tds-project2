@@ -57,7 +57,7 @@ def answer_question():
     if file:
         filename = file.filename.lower()
         if filename.endswith('.pdf'):
-            file_content = extract_text_from_pdf(file.stream)
+            file_content = extract_text_from_pdf(file)
         elif filename.endswith('.xlsx') or filename.endswith('.xls'):
             file_content = extract_text_from_excel(file)
         elif filename.endswith('.zip'):
