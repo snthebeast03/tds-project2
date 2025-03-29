@@ -9,7 +9,7 @@ import pandas as pd
 app = Flask(__name__)
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = "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"
 
 def extract_text_from_pdf(file_stream):
     doc = fitz.open(stream=file_stream, filetype="pdf")
