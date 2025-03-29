@@ -1,11 +1,43 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import io
+import zipfile
+import fitz  # PyMuPDF
+import pandas as pd
 
 app = Flask(__name__)
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = "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"  # Set in env
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+def extract_text_from_pdf(file_stream):
+    doc = fitz.open(stream=file_stream, filetype="pdf")
+    return "\n".join([page.get_text() for page in doc])
+
+def extract_text_from_excel(file_stream):
+    try:
+        excel_file = pd.read_excel(file_stream, sheet_name=None)
+        text = ""
+        for sheet_name, sheet in excel_file.items():
+            text += f"\n\n--- Sheet: {sheet_name} ---\n"
+            text += sheet.to_string(index=False)
+        return text
+    except Exception as e:
+        return f"Failed to parse Excel: {e}"
+
+def extract_text_from_zip(file_stream):
+    extracted_text = ""
+    with zipfile.ZipFile(file_stream) as z:
+        for name in z.namelist():
+            with z.open(name) as f:
+                if name.endswith(".txt"):
+                    extracted_text += f"\n\n--- {name} ---\n" + f.read().decode("utf-8", errors="ignore")
+                elif name.endswith(".pdf"):
+                    extracted_text += f"\n\n--- {name} (PDF) ---\n" + extract_text_from_pdf(f)
+                elif name.endswith(".xlsx") or name.endswith(".xls"):
+                    extracted_text += f"\n\n--- {name} (Excel) ---\n" + extract_text_from_excel(f)
+    return extracted_text
 
 @app.route('/api/', methods=['POST'])
 def answer_question():
@@ -15,9 +47,19 @@ def answer_question():
     if not question:
         return jsonify({"error": "Missing question parameter"}), 400
 
-    # Combine question and file (if present)
-    content = file.read().decode("utf-8", errors="ignore") if file else ""
-    full_input = f"{question}\n\n{content}"
+    file_content = ""
+    if file:
+        filename = file.filename.lower()
+        if filename.endswith('.pdf'):
+            file_content = extract_text_from_pdf(file.stream)
+        elif filename.endswith('.xlsx') or filename.endswith('.xls'):
+            file_content = extract_text_from_excel(file)
+        elif filename.endswith('.zip'):
+            file_content = extract_text_from_zip(file)
+        else:
+            file_content = file.read().decode("utf-8", errors="ignore")
+
+    full_input = f"{question}\n\n{file_content}"
 
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",

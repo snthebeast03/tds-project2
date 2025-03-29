@@ -1,3 +1,7 @@
 flask
-gunicorn
 requests
+PyMuPDF==1.23.4
+pandas
+openpyxl
+xlrd
+python-magic
